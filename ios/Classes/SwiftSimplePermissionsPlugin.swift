@@ -185,8 +185,7 @@ public class SwiftSimplePermissionsPlugin: NSObject, FlutterPlugin, CLLocationMa
     }
     
     private func requestLocationAlwaysPermission() -> Void {
-        if (CLLocationManager.authorizationStatus() == .notDetermined) {
-            self.whenInUse = false
+        if (CLLocationManager.authorizationStatus() == .notDetermined || CLLocationManager.authorizationStatus() == .authorizedWhenInUse) {
             locationManager.requestAlwaysAuthorization()
         }
         else  {
