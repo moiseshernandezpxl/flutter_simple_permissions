@@ -19,10 +19,16 @@ class SimplePermissions {
   }
 
   /// Request a [permission] and return a [Future] with the result
-  static Future<bool> requestPermission(Permission permission) async {
-    final bool isGranted = await _channel.invokeMethod(
+  static Future<PermissionStatus> requestPermission(
+      Permission permission) async {
+    final status = await _channel.invokeMethod(
         "requestPermission", {"permission": getPermissionString(permission)});
-    return isGranted;
+
+    return status is int
+        ? intToPermissionStatus(status)
+        : status is bool
+            ? (status ? PermissionStatus.authorized : PermissionStatus.denied)
+            : PermissionStatus.notDetermined;
   }
 
   /// Open app settings on Android and iOs
@@ -36,6 +42,10 @@ class SimplePermissions {
       Permission permission) async {
     final int status = await _channel.invokeMethod(
         "getPermissionStatus", {"permission": getPermissionString(permission)});
+    return intToPermissionStatus(status);
+  }
+
+  static PermissionStatus intToPermissionStatus(int status) {
     switch (status) {
       case 0:
         return PermissionStatus.notDetermined;
@@ -45,6 +55,8 @@ class SimplePermissions {
         return PermissionStatus.denied;
       case 3:
         return PermissionStatus.authorized;
+      case 4:
+        return PermissionStatus.deniedNeverAsk;
       default:
         return PermissionStatus.notDetermined;
     }
@@ -54,25 +66,40 @@ class SimplePermissions {
 /// Enum of all available [Permission]
 enum Permission {
   RecordAudio,
+  CallPhone,
   Camera,
   PhotoLibrary,
   WriteExternalStorage,
   ReadExternalStorage,
+  ReadPhoneState,
   AccessCoarseLocation,
   AccessFineLocation,
   WhenInUseLocation,
   AlwaysLocation,
   ReadContacts,
+  ReadSms,
+  SendSMS,
   Vibrate,
-  WriteContacts
+  WriteContacts,
+  AccessMotionSensor
 }
 
-/// Permissions status enum (iOs)
-enum PermissionStatus { notDetermined, restricted, denied, authorized }
+/// Permissions status enum (iOs: notDetermined, restricted, denied, authorized, deniedNeverAsk)
+/// (Android: denied, authorized, deniedNeverAsk)
+enum PermissionStatus {
+  notDetermined,
+  restricted,
+  denied,
+  authorized,
+  deniedNeverAsk /* android */
+}
 
 String getPermissionString(Permission permission) {
   String res;
   switch (permission) {
+    case Permission.CallPhone:
+      res = "CALL_PHONE";
+      break;
     case Permission.Camera:
       res = "CAMERA";
       break;
@@ -87,6 +114,9 @@ String getPermissionString(Permission permission) {
       break;
     case Permission.ReadExternalStorage:
       res = "READ_EXTERNAL_STORAGE";
+      break;
+    case Permission.ReadPhoneState:
+      res = "READ_PHONE_STATE";
       break;
     case Permission.AccessFineLocation:
       res = "ACCESS_FINE_LOCATION";
@@ -103,11 +133,20 @@ String getPermissionString(Permission permission) {
     case Permission.ReadContacts:
       res = "READ_CONTACTS";
       break;
+    case Permission.SendSMS:
+      res = "SEND_SMS";
+      break;
+    case Permission.ReadSms:
+      res = "READ_SMS";
+      break;
     case Permission.Vibrate:
       res = "VIBRATE";
       break;
     case Permission.WriteContacts:
       res = "WRITE_CONTACTS";
+      break;
+    case Permission.AccessMotionSensor:
+      res = "MOTION_SENSOR";
       break;
   }
   return res;

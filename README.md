@@ -60,7 +60,7 @@ enum PermissionStatus { notDetermined, restricted, denied, authorized }
   static Future<bool> checkPermission(Permission permission);
 
   /// Request a [permission] and return a [Future] with the result
-  static Future<bool> requestPermission(Permission permission);
+  static Future<PermissionStatus> requestPermission(Permission permission);
 
   /// Open app settings on Android and iOS
   static Future<bool> openSettings();

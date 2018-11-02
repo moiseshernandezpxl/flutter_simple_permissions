@@ -1,3 +1,13 @@
+## [0.1.9] - 15.10.2018
+* Support Motion permission (iOS)
+* Reduce minimum iOS deployment target to 9.3
+
+## [0.1.8] - 24.09.2018
+* Targeting Android API 27
+
+## [0.1.7] - 11.09.2018
+* Android Send SMS
+
 ## [0.1.6] - 10.08.2018
 * See commits for changelogs
 

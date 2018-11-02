@@ -3,6 +3,7 @@ import UIKit
 import AVFoundation
 import Photos
 import CoreLocation
+import CoreMotion
 import Contacts
 
 public class SwiftSimplePermissionsPlugin: NSObject, FlutterPlugin, CLLocationManagerDelegate {
@@ -89,6 +90,16 @@ public class SwiftSimplePermissionsPlugin: NSObject, FlutterPlugin, CLLocationMa
         case "READ_CONTACTS", "WRITE_CONTACTS":
             requestContactPermission(result: result)
             
+        case "READ_SMS":
+            result("ready")
+            
+        case "SEND_SMS":
+            result("ready")
+        
+        case "MOTION_SENSOR":
+            self.result = result
+            requestMotionPermission()
+            
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -114,6 +125,15 @@ public class SwiftSimplePermissionsPlugin: NSObject, FlutterPlugin, CLLocationMa
             
         case "ALWAYS_LOCATION":
             result(checkLocationAlwaysPermission())
+          
+        case "READ_SMS":
+            result(true)
+            
+        case "SEND_SMS":
+            result(true)
+            
+        case "MOTION_SENSOR":
+            result(checkMotionSensorPermission())
             
         default:
             result(FlutterMethodNotImplemented)
@@ -156,6 +176,15 @@ public class SwiftSimplePermissionsPlugin: NSObject, FlutterPlugin, CLLocationMa
             else {
                 result(status.rawValue)
             }
+            
+        case "READ_SMS":
+            result(1)
+            
+        case "SEND_SMS":
+            result(1)
+            
+        case "MOTION_SENSOR":
+            result(getMotionSensorPermissionStatus())
             
         default:
             result(FlutterMethodNotImplemented)
@@ -274,6 +303,44 @@ public class SwiftSimplePermissionsPlugin: NSObject, FlutterPlugin, CLLocationMa
     private func requestPhotoLibraryPermission(result: @escaping FlutterResult) {
         PHPhotoLibrary.requestAuthorization { (status) in
             result(status == PHAuthorizationStatus.authorized)
+        }
+    }
+    
+    //-----------------------------------
+    // Motion
+    private func checkMotionSensorPermission() -> Bool {
+        return getMotionSensorPermissionStatus() == 3
+    }
+    
+    private func getMotionSensorPermissionStatus() -> Int {
+        if #available(iOS 11.0, *) {
+            return CMPedometer.authorizationStatus().rawValue
+        } else {
+            // Fallback on earlier versions
+            return CMSensorRecorder.isAuthorizedForRecording() ? 3 : 2
+        }
+    }
+    
+    private var pedometer: CMPedometer?
+    private func requestMotionPermission() {
+        let now = Date()
+        if getMotionSensorPermissionStatus() == 0 {
+            pedometer = CMPedometer()
+            pedometer?.queryPedometerData(from: now, to: now.addingTimeInterval(-1.0)) { [weak self] (data, error) in
+                if let error = error as NSError? {
+                    if error.code == Int(CMErrorMotionActivityNotAuthorized.rawValue) {
+                        self?.result?(false)
+                    } else {
+                        self?.result?(false)
+                    }
+                } else {
+                    self?.result?(true)
+                }
+                
+                self?.pedometer = nil
+            }
+        } else {
+            result?(checkMotionSensorPermission())
         }
     }
 }

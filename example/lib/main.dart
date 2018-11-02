@@ -49,11 +49,22 @@ class _MyAppState extends State<MyApp> {
         body: new Center(
           child: new Column(children: <Widget>[
             new Text('Running on: $_platformVersion\n'),
-            new DropdownButton(items: _getDropDownItems(), value: permission, onChanged: onDropDownChanged),
-            new RaisedButton(onPressed: checkPermission, child: new Text("Check permission")),
-            new RaisedButton(onPressed: requestPermission, child: new Text("Request permission")),
-            new RaisedButton(onPressed: getPermissionStatus, child: new Text("Get permission status")),
-            new RaisedButton(onPressed: SimplePermissions.openSettings, child: new Text("Open settings"))
+            new DropdownButton(
+                items: _getDropDownItems(),
+                value: permission,
+                onChanged: onDropDownChanged),
+            new RaisedButton(
+                onPressed: checkPermission,
+                child: new Text("Check permission")),
+            new RaisedButton(
+                onPressed: requestPermission,
+                child: new Text("Request permission")),
+            new RaisedButton(
+                onPressed: getPermissionStatus,
+                child: new Text("Get permission status")),
+            new RaisedButton(
+                onPressed: SimplePermissions.openSettings,
+                child: new Text("Open settings"))
           ]),
         ),
       ),
@@ -66,13 +77,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   requestPermission() async {
-    bool res = await SimplePermissions.requestPermission(permission);
+    final res = await SimplePermissions.requestPermission(permission);
     print("permission request result is " + res.toString());
   }
 
   checkPermission() async {
-   bool res = await SimplePermissions.checkPermission(permission);
-   print("permission is " + res.toString());
+    bool res = await SimplePermissions.checkPermission(permission);
+    print("permission is " + res.toString());
   }
 
   getPermissionStatus() async {
@@ -80,10 +91,11 @@ class _MyAppState extends State<MyApp> {
     print("permission status is " + res.toString());
   }
 
-  List<DropdownMenuItem<Permission>>_getDropDownItems() {
+  List<DropdownMenuItem<Permission>> _getDropDownItems() {
     List<DropdownMenuItem<Permission>> items = new List();
     Permission.values.forEach((permission) {
-      var item  = new DropdownMenuItem(child: new Text(getPermissionString(permission)), value: permission);
+      var item = new DropdownMenuItem(
+          child: new Text(getPermissionString(permission)), value: permission);
       items.add(item);
     });
     return items;
